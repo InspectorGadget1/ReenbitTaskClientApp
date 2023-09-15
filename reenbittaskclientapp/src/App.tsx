@@ -4,13 +4,24 @@ import './App.css'
 function App() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [email, setEmail] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
         setSelectedFile(file);
     };
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
+        const inputEmail = e.target.value;
+        setEmail(inputEmail);
+        
+        const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        if (!emailPattern.test(inputEmail)) {
+            setEmailError('Enter a valid email.');
+        } else {
+            setEmailError(null);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -21,6 +32,7 @@ function App() {
         }
 
         try {
+            setIsSubmitting(true);
             const formData = new FormData();
 
             formData.append('file', selectedFile);
@@ -42,6 +54,8 @@ function App() {
             }
         } catch (error) {
             console.error('Error sending data to the API:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -67,10 +81,13 @@ function App() {
                         value={email}
                         onChange={handleEmailChange}
                         required
-                        style={{ marginLeft: '10px' }}
+                        style={{ marginLeft: '10px', marginRight: '10px' }}
                     />
+                    {emailError && <p style={{ color: 'red', margin: 0 }}>{emailError}</p>}
                 </div>
-                <button type="submit">Submit</button>
+                <button type="submit">
+                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                </button>
             </form>
         </div>
     );
